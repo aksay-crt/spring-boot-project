@@ -1,12 +1,25 @@
 package com.axa.utility;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.zip.GZIPInputStream;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.axa.dto.Index;
 
 public class Utility {
 
+	// output of https://www1.nseindia.com/homepage/Indices1.json as on 12-05-2020
 	public static List<Index> mockIndices() {
 		return Arrays.asList(
 				new Index("NIFTY 50 Pre Open", "9,168.85", "-70.35", "-0.76", "NIFTY_50_Pre_Open_open.png"),
@@ -64,6 +77,56 @@ public class Utility {
 				new Index("NIFTY SMLCAP 250", "3,394.70", "-45.60", "-1.33", "NIFTY_SMLCAP_250_open.png"),
 				new Index("NIFTY MIDSML 400", "4,331.80", "-55.85", "-1.27", "NIFTY_MIDSML_400_open.png"),
 				new Index("NIFTY200 QUALTY30", "8,425.15", "-41.00", "-0.48", "NIFTY200_QUALTY30_open.png"));
+	}
+
+	public static String getIndicesAsJson() throws IOException {
+
+		final Map<String, String> httpHeaders = new HashMap<>();
+		httpHeaders.put("User-Agent",
+				"Mozilla/5.0 (compatible; MSIE 9.0; Windows Phone OS 7.5; Trident/5.0; IEMobile/9.0)");
+		httpHeaders.put("Accept-Encoding", "gzip");
+
+		final HttpURLConnection con = (HttpURLConnection) new URL("https://www1.nseindia.com/homepage/Indices1.json")
+				.openConnection();
+		for (final Entry<String, String> e : httpHeaders.entrySet()) {
+			con.setRequestProperty(e.getKey(), e.getValue());
+		}
+		con.connect();
+
+		try (InputStream is = con.getInputStream(); GZIPInputStream in = new GZIPInputStream(is);) {
+
+			int cp;
+
+			final StringBuilder sb = new StringBuilder();
+			while ((cp = in.read()) != -1) {
+				sb.append((char) cp);
+			}
+
+			return sb.toString();
+		}
+	}
+
+	public static List<Index> convertJsonToIndex(String jsonString) {
+
+		final JSONObject json = new JSONObject(jsonString);
+
+		final JSONArray jsonArray = json.getJSONArray("data");
+
+		final List<Object> indices = jsonArray.toList();
+
+		final List<Index> indexList = new ArrayList<>();
+		for (final Object index : indices) {
+			if (index instanceof Map) {
+				final Map<String, String> map = (Map<String, String>) index;
+				indexList.add(new Index(
+						map.get("name"),
+						map.get("lastPrice"),
+						map.get("change"),
+						map.get("pChange"),
+						map.get("imgFileName")));
+			}
+		}
+		return indexList;
 	}
 
 }
