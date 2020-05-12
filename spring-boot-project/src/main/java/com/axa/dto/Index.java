@@ -61,4 +61,10 @@ public class Index {
 		this.imgFileName = imgFileName;
 	}
 
+	@Override
+	public String toString() {
+		return "Index [name=" + name + ", lastPrice=" + lastPrice + ", change=" + change + ", pChange=" + pChange
+				+ ", imgFileName=" + imgFileName + "]";
+	}
+
 }

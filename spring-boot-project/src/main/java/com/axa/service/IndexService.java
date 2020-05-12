@@ -20,11 +20,8 @@ public class IndexService {
 
 	@PostConstruct
 	public void loadIndices() throws IOException {
-
 		final List<Index> indexList = Utility.convertJsonToIndex(Utility.getIndicesAsJson());
-
 		indexList.forEach(index -> indexDao.add(index));
-
 	}
 
 	public List<Index> get() {
@@ -37,6 +34,18 @@ public class IndexService {
 
 	public List<Index> getIndexByPattern(String pattern) {
 		return indexDao.getLike(pattern);
+	}
+
+	public void add(Index index) {
+		indexDao.add(index);
+	}
+
+	public void update(String id, Index index) {
+		indexDao.update(id, index);
+	}
+
+	public void delete(String id) {
+		indexDao.delete(id);
 	}
 
 }

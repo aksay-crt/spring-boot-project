@@ -14,4 +14,8 @@ public interface IndexDao {
 
 	List<Index> getLike(String pattern);
 
+	void update(String id, Index index);
+
+	void delete(String id);
+
 }
